@@ -517,6 +517,7 @@ class LickVncLauncher(object):
                  f"on local port {local_port}.")
 
         # build the command
+        forwarding = f"{local_port}:localhost:{remote_port}"
         command = ['ssh', '-l', username, '-L', forwarding, '-N', '-T', server]
         if ssh_pkey is not None:
             command.append('-i')
