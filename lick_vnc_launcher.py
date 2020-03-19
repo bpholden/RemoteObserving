@@ -289,6 +289,7 @@ class LickVncLauncher(object):
                     return
                 
                 vncserver = 'localhost'
+                
         else:
             local_port = port
 
@@ -857,6 +858,7 @@ class LickVncLauncher(object):
     def close_ssh_thread(self, p):
         if p in self.ports_in_use.keys():
             try:
+                remote_connection, desktop, process = self.ports_in_use.pop(p, None)
             except KeyError:
                 return
             
