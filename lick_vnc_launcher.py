@@ -5,27 +5,29 @@
 import os
 import sys
 import re
-import socket
+
 import argparse
-import logging
-import time
-import yaml
-from getpass import getpass
-import paramiko
-from time import sleep
-from threading import Thread
-from telnetlib import Telnet
-from astropy.table import Table, Column
-from soundplay import soundplay
 import atexit
-from datetime import datetime
-import traceback
-from pathlib import Path
+import datetime
+import getpass
+import logging
 import math
+import pathlib 
+import platform
+import socket
 import subprocess
+import telnetlib
+import threading
+import time
+import traceback
 import warnings
 
-import platform
+import yaml
+
+import paramiko
+import astropy.table
+
+import soundplay
 
 __version__ = '0.1'
 
