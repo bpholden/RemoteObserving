@@ -826,26 +826,21 @@ class LickVncLauncher(object):
         sessions = []
         cmd = f"vncstatus {instrument}"
         data = self.do_ssh_cmd(cmd, vncserver, account, password)
-        sessions = dict()
         
         if data:
             lns = data.split("\n")
-            self.log.debug(f'  Got {len(lns)} sessions')
-            names = [x.split('-')[1].strip() for x in lns]
-            sessions['Desktop'] = names
-            sessions['Display'] = [x.split('-')[0].strip() for x in lns]
-            sessions['name'] = [''.join(x.split()[1:]) for x in names]
-        else:
-            names = []
-            sessions['Desktop'] = []
-            sessions['Display'] = []
-            sessions['name'] = []
+            if lns[0] = "#":
+                fields = lns.split('-').strip()
+                desktop = fields[1],strip()
+                display = fields[0].strip()
+                name = ''.join(desktop.split()[1:]) 
+                s = VNCSession(display=display, desktop=desktop, user=account)
+                if s.user == instr_account:
+                    sessions.append(s)            
+        self.log.debug(f'  Got {len(sessions)} sessions')
+        for s in sessions:
+            self.log.debug(str(s))
 
-        self.log.debug("\n" + str(names))
-        sessions = astropy.table.Table(sessions)
-        if len(names) > 0:
-            find = sessions['Display'].argsort()
-            sessions[find]=sessions
         return sessions
 
 
