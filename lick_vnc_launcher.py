@@ -596,14 +596,6 @@ class LickVncLauncher(object):
         #append to proc list so we can terminate on app exit
         self.vnc_processes.append(proc)
 
-        #capture all output and log
-        #todo: figure out how to do this realtime as stream instead of only when proc terminates
-        # out, err = proc.communicate()
-        # out = out.decode()
-        # err = err.decode()
-        # self.log.debug('vnc comm output: ' + out)
-        # if err: self.log.debug('vnc comm err: ' + err)
-
 
     ##-------------------------------------------------------------------------
     ## Start soundplay
