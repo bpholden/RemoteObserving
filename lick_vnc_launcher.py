@@ -849,7 +849,11 @@ class LickVncLauncher(object):
     ##-------------------------------------------------------------------------
     def close_ssh_thread(self, p):
         if p in self.ports_in_use.keys():
-            remote_connection, desktop, thread = self.ports_in_use.pop(p, None)
+            try:
+                remote_connection, desktop, thread = self.ports_in_use.pop(p, None)
+            except KeyError:
+                return
+            
             self.log.info(f" Closing SSH tunnel for port {p:d}, {desktop:s} "
                      f"on {remote_connection:s}")
             thread.stop()
