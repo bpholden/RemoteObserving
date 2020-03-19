@@ -412,9 +412,10 @@ class LickVncLauncher(object):
             # ip = socket.gethostbyname(hostname)
             # self.log.debug(f'System IP Address: {ip}')
             self.log.info(f'Remote Observing Software Version = {__version__}')
-        except Exception as error:
+        except :
             self.log.error("Unable to log system info.")
-            self.log.debug(str(error))
+            trace = traceback.format_exc()
+            self.log.debug(trace)
 
 
     ##-------------------------------------------------------------------------
@@ -618,11 +619,11 @@ class LickVncLauncher(object):
             self.sound = soundplay()
             self.sound.connect(self.instrument, vncserver, sound_port,
                                aplay=aplay, player=soundplayer)
-            #todo: should we start this as a thread?  
-            # soundThread.start()
-        except Exception as error:
+        except Exception:
             self.log.error('Unable to start soundplay.  See log for details.')
-            self.log.info(str(error))
+            trace = traceback.format_exc()
+            self.log.debug(trace)
+
 
 
     def play_test_sound(self):
@@ -654,9 +655,10 @@ class LickVncLauncher(object):
                 else:
                     self.log.error(result)
                     return False
-        except Exception as error:
+        except:
             self.log.error('Unable to authenticate through firewall')
-            self.log.info(str(error))
+            trace = traceback.format_exc()
+            self.log.debug(trace)
             return False
 
 
@@ -988,7 +990,12 @@ class LickVncLauncher(object):
                 quit = True
             elif cmd == 'w':
                 self.log.info(f'Recieved command "{cmd}"')
-                self.position_vnc_windows()
+                try:
+                    self.position_vnc_windows()
+                except:
+                    self.log.error("Failed to reposition windows, see log")
+                    trace = traceback.format_exc()
+                    self.log.debug(trace)
             elif cmd == 'p':
                 self.log.info(f'Recieved command "{cmd}"')
                 self.play_test_sound()
@@ -1079,9 +1086,10 @@ class LickVncLauncher(object):
             self.log.info(f'  to {self.args.account}@{self.vncserver}:{destination}')
         except TimeoutError:
             self.log.error('  Timed out trying to upload log file')
-        except Exception as e:
+        except Exception:
             self.log.error('  Unable to upload logfile: ' + str(e))
-
+            trace = traceback.format_exc()
+            self.log.debug(trace)
 
     ##-------------------------------------------------------------------------
     ## Terminate all vnc processes
@@ -1097,9 +1105,11 @@ class LickVncLauncher(object):
                 if proc.poll() == None:
                     proc.terminate()
 
-        except Exception as error:
+        except:
             self.log.error("Failed to terminate VNC sessions.  See log for details.")
-            self.log.debug(str(error))
+            trace = traceback.format_exc()
+            self.log.debug(trace)
+
 
 
     ##-------------------------------------------------------------------------
