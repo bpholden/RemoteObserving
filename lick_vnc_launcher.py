@@ -66,6 +66,7 @@ class LickVncLauncher(object):
         self.is_ssh_key_valid = False
         self.exit = False
 
+        self.servers_to_try = ['shimmy', 'frankfurt']
 
         #session name consts
         self.SESSION_NAMES = [
