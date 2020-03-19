@@ -1040,8 +1040,8 @@ class LickVncLauncher(object):
     ## Check for latest version number on GitHub
     ##-------------------------------------------------------------------------
     def check_version(self):
-        url = ('https://raw.githubusercontent.com/KeckObservatory/'
-               'RemoteObserving/master/keck_vnc_launcher.py')
+        url = ('https://raw.githubusercontent.com/bpholden/'
+               'RemoteObserving/master/lick_vnc_launcher.py')
         try:
             import requests
             from packaging import version
