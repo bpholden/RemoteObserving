@@ -793,7 +793,7 @@ class LickVncLauncher(object):
         vncserver = None
         for server in self.servers_to_try:
             server += ".ucolick.org"
-            cmd = 'vncstatus %s' % (instrument)
+            cmd = f"vncstatus {instrument}"
             data = self.do_ssh_cmd(cmd, server, account, password)
             # parse data
             if data and len(data) > 3: # refactor
@@ -814,7 +814,7 @@ class LickVncLauncher(object):
         self.log.info(f"Connecting to {account}@{vncserver} to get VNC sessions list")
 
         sessions = []
-        cmd = 'vncstatus %s' % (instrument)
+        cmd = f"vncstatus {instrument}"
         data = self.do_ssh_cmd(cmd, vncserver, account, password)
         sessions = dict()
         
