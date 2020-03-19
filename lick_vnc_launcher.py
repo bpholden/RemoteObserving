@@ -37,7 +37,7 @@ class VNCSession(object):
     '''
     def __init__(self, name=None, display=None, desktop=None, user=None, pid=None):
         if name is None and display is not None:
-            name = desktop.split('-')[2]
+            name = ''.join(desktop.split()[1:])
         self.name = name
         self.display = display
         self.desktop = desktop
