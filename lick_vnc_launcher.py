@@ -24,7 +24,7 @@ from pathlib import Path
 import math
 import subprocess
 import warnings
-import sshtunnel
+
 import platform
 
 __version__ = '0.1'
@@ -501,30 +501,39 @@ class LickVncLauncher(object):
         self.log.info(f"Opening SSH tunnel for {address_and_port} "
                  f"on local port {local_port}.")
 
-        #try to open ssh tunnel
-        try:
-            thread = sshtunnel.SSHTunnelForwarder(
-                server,
-                ssh_username=username,
-                ssh_password=password,
-                ssh_pkey=ssh_pkey,
-                remote_bind_address=('127.0.0.1', remote_port),
-                local_bind_address=('0.0.0.0', local_port),
-            )
-            thread.start()
+        # build the command
+        command = ['ssh', '-l', username, '-L', forwarding, '-N', '-T', server]
+        if ssh_pkey is not None:
+            command.append('-i')
+            command.append(ssh_pkey)
 
-            #if success, keep track of ssh threads and ports in use
-#             self.ssh_threads.append(thread)
-            self.ports_in_use[local_port] = [address_and_port, session_name,
-                                             thread]
-            return local_port
+        self.log.debug('ssh command: ' + ' '.join (command))
+        process = subprocess.Popen(command)
 
-        except Exception as e:
-            self.log.error(f"Failed to open SSH tunnel for "
-                      f"{username}@{server}:{remote_port} "
-                      f"on local port {local_port}.")
-            self.log.debug(str(e))
-            return False
+
+        # Having started the process let's make sure it's actually running.
+        # First try polling,  then confirm the requested local port is in use.
+        # It's a fatal error if either check fails.
+
+        if process.poll() is not None:
+            raise RuntimeError('subprocess failed to execute ssh')
+        
+        checks = 50
+        while checks > 0:
+            result = self.is_local_port_in_use(local_port)
+            if result == True:
+                break
+            else:
+                checks -= 1
+                time.sleep(0.1)
+
+        if checks == 0:
+            raise RuntimeError('ssh tunnel failed to open after 5 seconds')
+
+        in_use = [address_and_port, session_name, process]
+        self.ports_in_use[local_port] = in_use
+        
+        return local_port
 
 
     ##-------------------------------------------------------------------------
@@ -535,7 +544,7 @@ class LickVncLauncher(object):
         proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
         data = proc.communicate()[0]
         data = data.decode("utf-8").strip()
-        lines = data.split('\n') if data else []
+        lines = data.split('\n') if data else list()
         if lines:
             self.log.debug(f"Port {port} is in use.")
             return True
