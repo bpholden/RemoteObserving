@@ -25,7 +25,7 @@ import warnings
 import yaml
 
 import paramiko
-import astropy.table
+
 
 import soundplay
 
