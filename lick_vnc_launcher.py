@@ -856,7 +856,7 @@ class LickVncLauncher(object):
             
             self.log.info(f" Closing SSH tunnel for port {p:d}, {desktop:s} "
                      f"on {remote_connection:s}")
-            thread.stop()
+            process.kill()
 
 
     def close_ssh_threads(self):
