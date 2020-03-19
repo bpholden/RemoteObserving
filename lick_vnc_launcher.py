@@ -212,8 +212,8 @@ class LickVncLauncher(object):
         self.ports_in_use = {}
         self.vnc_threads  = []
         self.vnc_processes = []
-        for session_name in self.sessions_found['name']:
-            self.start_vnc_session(session_name)
+        for s in self.sessions_found:
+            self.start_vnc_session(s.name)
 
 
         ##---------------------------------------------------------------------
@@ -244,8 +244,10 @@ class LickVncLauncher(object):
 #         try:
         #get session data by name
         session = None
-        if any(self.sessions_found['name'] == session_name):
-                session = self.sessions_found[self.sessions_found['name'] == session_name]
+        for s in self.sessions_found:
+                if s.name == session_name:
+                        session = s
+                        
         if not session:
             self.log.error(f"No server VNC session found for '{session_name}'.")
             self.print_sessions_found()
@@ -255,7 +257,7 @@ class LickVncLauncher(object):
         vncserver = self.vncserver
 
         #get remote port
-        display   = int(session['Display'])
+        display   = int(session.display)
         port      = int(f"59{display:02d}")
 
         ## If authenticating, open SSH tunnel for appropriate ports
@@ -275,12 +277,17 @@ class LickVncLauncher(object):
 
             #open ssh tunnel
             if local_port is None:
-                local_port = self.open_ssh_tunnel(vncserver, account, password,
-                                                  self.ssh_pkey, port, None,
-                                                  session_name=session_name)
-            if not local_port:
-                return
-            else:
+                try:
+                    local_port = self.open_ssh_tunnel(vncserver, account, password,
+                                                    self.ssh_pkey, port, None,
+                                                    session_name=session_name)
+                except:
+                    self.log.error(f"Failed to open SSH tunnel for "
+                              f"{account}@{vncserver}:{port}")
+                    trace = traceback.format_exc()
+                    self.log.debug(trace)
+                    return
+                
                 vncserver = 'localhost'
         else:
             local_port = port
@@ -829,13 +836,13 @@ class LickVncLauncher(object):
         
         if data:
             lns = data.split("\n")
-            if lns[0] = "#":
-                fields = lns.split('-').strip()
-                desktop = fields[1],strip()
-                display = fields[0].strip()
-                name = ''.join(desktop.split()[1:]) 
-                s = VNCSession(display=display, desktop=desktop, user=account)
-                if s.user == instr_account:
+            for ln in lns:
+                if ln[0] != "#":
+                    fields = ln.split('-')
+                    display = fields[0].strip()
+                    desktop = fields[1].strip()
+                    name = ''.join(desktop.split()[1:]) 
+                    s = VNCSession(display=display, desktop=desktop, user=account)
                     sessions.append(s)            
         self.log.debug(f'  Got {len(sessions)} sessions')
         for s in sessions:
@@ -850,7 +857,6 @@ class LickVncLauncher(object):
     def close_ssh_thread(self, p):
         if p in self.ports_in_use.keys():
             try:
-                remote_connection, desktop, thread = self.ports_in_use.pop(p, None)
             except KeyError:
                 return
             
@@ -1138,7 +1144,7 @@ class LickVncLauncher(object):
             self.sound.terminate()
 
         # Close down ssh tunnels and firewall authentication
-        if self.do_authenticate is True:
+        if self.do_forward:
             self.close_ssh_threads()
             self.close_authentication(self.firewall_pass)
 
