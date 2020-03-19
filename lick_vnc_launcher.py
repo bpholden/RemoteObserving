@@ -31,6 +31,22 @@ import soundplay
 
 __version__ = '0.1'
 
+
+class VNCSession(object):
+    '''An object to contain information about a VNC session.
+    '''
+    def __init__(self, name=None, display=None, desktop=None, user=None, pid=None):
+        if name is None and display is not None:
+            name = desktop.split('-')[2]
+        self.name = name
+        self.display = display
+        self.desktop = desktop
+        self.user = user
+        self.pid = pid
+
+    def __str__(self):
+        return f"  {self.name:12s} {self.display:5s} {self.desktop:s}"
+
 class LickVncLauncher(object):
 
     def __init__(self):
