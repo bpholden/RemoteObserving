@@ -641,7 +641,7 @@ class LickVncLauncher(object):
 
 
     ##-------------------------------------------------------------------------
-    ## Authenticate
+    ## Authenticate through the Keck firewall - needs to be rewritten 
     ##-------------------------------------------------------------------------
     def authenticate(self, authpass):
 
