@@ -114,7 +114,7 @@ class LickVncLauncher(object):
         #todo: handle blank password error properly
         self.is_authenticated = False
         if self.do_authenticate:
-            self.firewall_pass = getpass(f"Password for firewall authentication: ")
+            self.firewall_pass = getpass.getpass(f"Password for firewall authentication: ")
             self.is_authenticated = self.authenticate(self.firewall_pass)
             if not self.is_authenticated:
                 self.exit_app('Authentication failure!')
@@ -148,7 +148,7 @@ class LickVncLauncher(object):
                           "for other options to connect remotely.\n")
                 self.exit_app()
         else:
-            self.vnc_password = getpass(f"Password for user {self.args.account}: ")
+            self.vnc_password = getpass.getpass(f"Password for user {self.args.account}: ")
 
 
         ##---------------------------------------------------------------------
@@ -291,15 +291,10 @@ class LickVncLauncher(object):
                 geometry += f'+{xpos}+{ypos}'
 
         ## Open vncviewer as separate thread
-        self.vnc_threads.append(Thread(target=self.launch_vncviewer,
+        self.vnc_threads.append(threading.Thread(target=self.launch_vncviewer,
                                        args=(vncserver, local_port, geometry)))
         self.vnc_threads[-1].start()
-        sleep(0.05)
-
-#         except Exception as error:
-#             self.log.error("Unable to start vnc session.  See log for details.")
-#             self.log.debug(str(error))
-
+        time.sleep(0.05)
 
     ##-------------------------------------------------------------------------
     ## Get command line args
@@ -319,7 +314,7 @@ class LickVncLauncher(object):
         #if config file specified, put that at beginning of list
         filename = self.args.config
         if filename is not None:
-            if not Path(filename).is_file():
+            if not pathlib.Path(filename).is_file():
                 self.log.error(f'Specified config file "{filename}" does not exist.')
                 self.exit_app()
             else:
@@ -328,7 +323,7 @@ class LickVncLauncher(object):
         #find first file that exists
         file = None
         for f in filenames:
-            if Path(f).is_file():
+            if pathlib.Path(f).is_file():
                 file = f
                 break
         if not file:
@@ -393,7 +388,7 @@ class LickVncLauncher(object):
         if not self.ssh_pkey:
             self.log.warning("No ssh private key file specified in config file.\n")
         else:
-            if not Path(self.ssh_pkey).exists():
+            if not pathlib.Path(self.ssh_pkey).exists():
                 self.log.warning(f"SSH private key path does not exist: {self.ssh_pkey}")
 
         #check default_sessions
@@ -624,7 +619,6 @@ class LickVncLauncher(object):
             self.sound.connect(self.instrument, vncserver, sound_port,
                                aplay=aplay, player=soundplayer)
             #todo: should we start this as a thread?  
-            # sound = sound = Thread(target=launch_soundplay, args=(vncserver, 9798, instrument,))
             # soundThread.start()
         except Exception as error:
             self.log.error('Unable to start soundplay.  See log for details.')
@@ -646,7 +640,7 @@ class LickVncLauncher(object):
         self.log.info(f' {self.firewall_user}@{self.firewall_address}:{self.firewall_port}')
 
         try:
-            with Telnet(self.firewall_address, int(self.firewall_port)) as tn:
+            with telnetlib.Telnet(self.firewall_address, int(self.firewall_port)) as tn:
                 tn.read_until(b"User: ", timeout=5)
                 tn.write(f'{self.firewall_user}\n'.encode('ascii'))
                 tn.read_until(b"password: ", timeout=5)
@@ -676,7 +670,7 @@ class LickVncLauncher(object):
 
         self.log.info('Signing off of firewall authentication')
         try:
-            with Telnet(self.firewall_address, int(self.firewall_port)) as tn:
+            with telnetlib.Telnet(self.firewall_address, int(self.firewall_port)) as tn:
                 tn.read_until(b"User: ", timeout=5)
                 tn.write(f'{self.firewall_user}\n'.encode('ascii'))
                 tn.read_until(b"password: ", timeout=5)
@@ -836,7 +830,7 @@ class LickVncLauncher(object):
             sessions['name'] = []
 
         self.log.debug("\n" + str(names))
-        sessions = Table(sessions)
+        sessions = astropy.table.Table(sessions)
         if len(names) > 0:
             find = sessions['Display'].argsort()
             sessions[find]=sessions
@@ -1078,7 +1072,7 @@ class LickVncLauncher(object):
 
             logfile_handlers = [lh for lh in self.log.handlers if 
                                 isinstance(lh, logging.FileHandler)]
-            logfile = Path(logfile_handlers.pop(0).baseFilename)
+            logfile = pathlib.Path(logfile_handlers.pop(0).baseFilename)
             destination = logfile.name
             sftp.put(logfile, destination)
             self.log.info(f'  Uploaded {logfile.name}')
@@ -1213,8 +1207,8 @@ def create_logger():
         log.setLevel(logging.DEBUG)
 
         #create log file and log dir if not exist
-        ymd = datetime.utcnow().date().strftime('%Y%m%d')
-        Path('logs/').mkdir(parents=True, exist_ok=True)
+        ymd = datetime.datetime.utcnow().date().strftime('%Y%m%d')
+        pathlib.Path('logs/').mkdir(parents=True, exist_ok=True)
 
         #file handler (full debug logging)
         logFile = f'logs/lick-remote-log-utc-{ymd}.txt'
