@@ -713,19 +713,16 @@ class LickVncLauncher(object):
     ## Determine Instrument
     ##-------------------------------------------------------------------------
     def determine_instrument(self, account):
-        accounts = {'apf':  'apf',
-                    'kast': 'kast',
-                    'nickel': 'nickel',
-                   }
+        instruments = ('apf','kast', 'nickel')
+
 
         telescope = {'apf': 11,
                      'kast':   1,
                      'nickel' : 2,
                     }
 
-        for instrument in accounts.keys():
-            if account.lower() in accounts[instrument]:
-                return instrument, telescope[instrument]
+        if account.lower() in instruments:
+            return instrument, telescope[instrument]
 
         return None, None
 
@@ -814,10 +811,12 @@ class LickVncLauncher(object):
             cmd = f"vncstatus {instrument}"
             data = self.do_ssh_cmd(cmd, server, account, password)
             # parse data
-            if data and len(data) > 3: # refactor
-                vncserver = server
-                self.log.info(f"Got VNC server: '{vncserver}'")
-                break
+            if data and len(data) > 3:
+                mtch = re.search("Usage",data)
+                if not mtch:
+                    vncserver = server
+                    self.log.info(f"Got VNC server: '{vncserver}'")
+                    break
 
         return vncserver
 
@@ -841,6 +840,9 @@ class LickVncLauncher(object):
                 if ln[0] != "#":
                     fields = ln.split('-')
                     display = fields[0].strip()
+                    if display == 'Usage':
+                        # this should not happen
+                        break
                     desktop = fields[1].strip()
                     name = ''.join(desktop.split()[1:]) 
                     s = VNCSession(display=display, desktop=desktop, user=account)
